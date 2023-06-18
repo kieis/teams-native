@@ -1,12 +1,13 @@
-import { Fragment } from "react";
-import { StatusBar } from "expo-status-bar";
 import Groups from "@screens/Groups";
+import theme from "@theme/index";
+import { StatusBar } from "expo-status-bar";
+import { ThemeProvider } from "styled-components/native";
 
 export default function App() {
   return (
-    <Fragment>
+    <ThemeProvider theme={theme}>
       <StatusBar style="light" translucent />
       <Groups />
-    </Fragment>
+    </ThemeProvider>
   );
 }

@@ -6,3 +6,11 @@ export const Container = styled.View`
 
   padding: 24px;
 `;
+
+export const Form = styled.View`
+  flex-direction: row;
+  width: 100%;
+  background-color: ${({ theme }) => theme.COLORS.GRAY_700};
+
+  border-radius: 6px;
+`;

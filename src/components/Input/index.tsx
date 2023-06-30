@@ -6,6 +6,5 @@ interface InputProps extends TextInputProps {}
 
 export default function Input({ ...rest }: InputProps) {
   //const theme = useTheme(); another way to use theme
-
   return <Container {...rest} />;
 }

@@ -18,7 +18,7 @@ export default function Groups() {
         data={groups}
         keyExtractor={(item) => item}
         renderItem={({ item }) => <GroupCard title={item} />}
-        ListEmptyComponent={() => <ListEmpty />}
+        ListEmptyComponent={() => <ListEmpty message="Empty List" />}
         contentContainerStyle={groups.length === 0 && { flex: 1 }}
       />
       <Button title="Create new group" />

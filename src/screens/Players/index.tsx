@@ -9,10 +9,18 @@ import { useState } from "react";
 import PlayerCard from "@components/PlayerCard";
 import ListEmpty from "@components/ListEmpty";
 import Button from "@components/Button";
+import { useRoute } from "@react-navigation/native";
+
+type RouteParams = {
+  group: string;
+};
 
 export default function Players() {
   const [selectedGroup, setSelectedGroup] = useState("Group A");
   const [players, setPlayers] = useState<string[]>([]);
+
+  const route = useRoute();
+  const { group: groupName } = route.params as RouteParams;
 
   function handleAddPlayer(player: string) {}
 
@@ -22,7 +30,7 @@ export default function Players() {
     <Container>
       <Header showBackButton />
 
-      <HighLight title="Group name" subTitle="add members to separate teams" />
+      <HighLight title={groupName} subTitle="add members to separate teams" />
       <Form>
         <Input placeholder="Member name" autoCorrect={false} />
         <ButtonIcon icon="add" />

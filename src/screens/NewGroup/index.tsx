@@ -4,12 +4,15 @@ import HighLight from "@components/Highlight";
 import Button from "@components/Button";
 import Input from "@components/Input";
 import { useNavigation } from "@react-navigation/native";
+import { useState } from "react";
 
 export default function NewGroup() {
+  const [group, setGroup] = useState("");
+
   const navigation = useNavigation();
 
   function handleForwardNavigation() {
-    navigation.navigate("players", { group: "Tech" });
+    navigation.navigate("players", { group });
   }
 
   return (
@@ -19,7 +22,7 @@ export default function NewGroup() {
       <Content>
         <Icon />
         <HighLight title="New group" subTitle="create a group to add members" />
-        <Input placeholder="Group name" />
+        <Input placeholder="Group name" onChangeText={setGroup} />
         <Button
           title="Create"
           style={{ marginTop: 20 }}

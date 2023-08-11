@@ -5,14 +5,20 @@ import Button from "@components/Button";
 import Input from "@components/Input";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
+import * as groupStorage from "@storage/group";
 
 export default function NewGroup() {
   const [group, setGroup] = useState("");
 
   const navigation = useNavigation();
 
-  function handleForwardNavigation() {
-    navigation.navigate("players", { group });
+  async function handleCreate() {
+    try {
+      await groupStorage.create(group);
+      navigation.navigate("players", { group });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
@@ -26,7 +32,7 @@ export default function NewGroup() {
         <Button
           title="Create"
           style={{ marginTop: 20 }}
-          onPress={handleForwardNavigation}
+          onPress={handleCreate}
         />
       </Content>
     </Container>

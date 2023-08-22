@@ -4,27 +4,66 @@ import HighLight from "@components/Highlight";
 import ButtonIcon from "@components/ButtonIcon";
 import Input from "@components/Input";
 import Filter from "@components/Filter";
-import { FlatList } from "react-native";
-import { useState } from "react";
+import { FlatList, Alert } from "react-native";
+import { useEffect, useState } from "react";
 import PlayerCard from "@components/PlayerCard";
 import ListEmpty from "@components/ListEmpty";
 import Button from "@components/Button";
 import { useRoute } from "@react-navigation/native";
+import { PlayerDTO } from "@storage/player/PlayerDTO";
+import { AppError } from "@utils/AppError";
+import * as playerStorage from "@storage/player";
 
 type RouteParams = {
   group: string;
 };
 
 export default function Players() {
+  const [playerName, setPlayerName] = useState<string | null>(null);
   const [selectedGroup, setSelectedGroup] = useState("Group A");
-  const [players, setPlayers] = useState<string[]>([]);
+  const [players, setPlayers] = useState<PlayerDTO[]>([]);
 
   const route = useRoute();
   const { group: groupName } = route.params as RouteParams;
 
-  function handleAddPlayer(player: string) {}
+  async function handleAddPlayer() {
+    if (!playerName || playerName?.trim().length === 0) {
+      return Alert.alert("New Player", "Please enter a member name.");
+    }
+
+    try {
+      const player: PlayerDTO = {
+        name: playerName,
+        team: selectedGroup,
+      };
+
+      await playerStorage.createByGroup(player, groupName);
+      await fetchPlayerByTeam();
+    } catch (err) {
+      if (err instanceof AppError) {
+        return Alert.alert("New Member", err.message);
+      }
+      Alert.alert("New Member", "Can't create a new member.");
+    }
+  }
+
+  async function fetchPlayerByTeam() {
+    try {
+      const playersByTeam = await playerStorage.getAllByGroupAndTeam(
+        groupName,
+        selectedGroup
+      );
+      setPlayers(playersByTeam);
+    } catch (err) {
+      Alert.alert("Fetch Members", "Can't fetch members.");
+    }
+  }
 
   function handleRemovePlayer(player: string) {}
+
+  useEffect(() => {
+    fetchPlayerByTeam();
+  }, [selectedGroup]);
 
   return (
     <Container>
@@ -32,8 +71,12 @@ export default function Players() {
 
       <HighLight title={groupName} subTitle="add members to separate teams" />
       <Form>
-        <Input placeholder="Member name" autoCorrect={false} />
-        <ButtonIcon icon="add" />
+        <Input
+          placeholder="Member name"
+          autoCorrect={false}
+          onChangeText={setPlayerName}
+        />
+        <ButtonIcon icon="add" onPress={handleAddPlayer} />
       </Form>
 
       <HeaderList>
@@ -54,9 +97,9 @@ export default function Players() {
 
       <FlatList
         data={players}
-        keyExtractor={(item) => item}
+        keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
-          <PlayerCard name={item} onRemove={() => {}} />
+          <PlayerCard name={item.name} onRemove={() => {}} />
         )}
         ListEmptyComponent={() => (
           <ListEmpty message="Have no members at this group" />

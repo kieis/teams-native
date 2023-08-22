@@ -6,6 +6,8 @@ import Input from "@components/Input";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import * as groupStorage from "@storage/group";
+import { AppError } from "@utils/AppError";
+import { Alert } from "react-native";
 
 export default function NewGroup() {
   const [group, setGroup] = useState("");
@@ -14,10 +16,17 @@ export default function NewGroup() {
 
   async function handleCreate() {
     try {
+      if (group.trim().length === 0) {
+        return Alert.alert("New Group", "Please inform a group name.");
+      }
+
       await groupStorage.create(group);
       navigation.navigate("players", { group });
     } catch (err) {
-      console.error(err);
+      if (err instanceof AppError) {
+        return Alert.alert("New Group", err.message);
+      }
+      Alert.alert("New Group", "Can't create a new group.");
     }
   }
 

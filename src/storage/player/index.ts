@@ -48,3 +48,19 @@ export async function createByGroup(player: PlayerDTO, group: string) {
     throw err;
   }
 }
+
+export async function removeByGroup(player: PlayerDTO, group: string) {
+  try {
+    const collection = await getAllByGroup(group);
+    const filtered = collection.filter(
+      (playerCollection) => playerCollection.name !== player.name
+    );
+
+    await AsyncStorage.setItem(
+      `${PLAYER_COLLECTION}-${group}`,
+      JSON.stringify(filtered)
+    );
+  } catch (err) {
+    throw err;
+  }
+}

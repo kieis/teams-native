@@ -9,26 +9,28 @@ import { useEffect, useState } from "react";
 import PlayerCard from "@components/PlayerCard";
 import ListEmpty from "@components/ListEmpty";
 import Button from "@components/Button";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { PlayerDTO } from "@storage/player/PlayerDTO";
 import { AppError } from "@utils/AppError";
 import * as playerStorage from "@storage/player";
+import * as groupStorage from "@storage/group";
 
 type RouteParams = {
   group: string;
 };
 
 export default function Players() {
-  const [playerName, setPlayerName] = useState<string | null>(null);
+  const [playerName, setPlayerName] = useState<string>("");
   const [selectedGroup, setSelectedGroup] = useState("Group A");
   const [players, setPlayers] = useState<PlayerDTO[]>([]);
 
   const route = useRoute();
+  const navigation = useNavigation();
   const { group: groupName } = route.params as RouteParams;
 
   async function handleAddPlayer() {
     if (!playerName || playerName?.trim().length === 0) {
-      return Alert.alert("New Player", "Please enter a member name.");
+      return Alert.alert("New Member", "Please enter a member name.");
     }
 
     try {
@@ -39,11 +41,49 @@ export default function Players() {
 
       await playerStorage.createByGroup(player, groupName);
       await fetchPlayerByTeam();
+      setPlayerName("");
     } catch (err) {
       if (err instanceof AppError) {
         return Alert.alert("New Member", err.message);
       }
       Alert.alert("New Member", "Can't create a new member.");
+    }
+  }
+
+  async function handleRemovePlayer(player: PlayerDTO) {
+    if (!player?.name) {
+      return Alert.alert("Remove member", "Invalid player.");
+    }
+
+    try {
+      const player: PlayerDTO = {
+        name: playerName,
+        team: selectedGroup,
+      };
+
+      await playerStorage.removeByGroup(player, groupName);
+      await fetchPlayerByTeam();
+    } catch (err) {
+      if (err instanceof AppError) {
+        return Alert.alert("Remove Member", err.message);
+      }
+      Alert.alert("Remove Member", "Can't remove the member.");
+    }
+  }
+
+  async function handleRemoveGroup() {
+    if (selectedGroup.trim().length === 0) {
+      return Alert.alert("Remove group", "Invalid group.");
+    }
+
+    try {
+      await groupStorage.remove(selectedGroup);
+      navigation.navigate("groups");
+    } catch (err) {
+      if (err instanceof AppError) {
+        return Alert.alert("Remove group", err.message);
+      }
+      Alert.alert("Remove group", "Can't remove the group.");
     }
   }
 
@@ -59,8 +99,6 @@ export default function Players() {
     }
   }
 
-  function handleRemovePlayer(player: string) {}
-
   useEffect(() => {
     fetchPlayerByTeam();
   }, [selectedGroup]);
@@ -75,6 +113,7 @@ export default function Players() {
           placeholder="Member name"
           autoCorrect={false}
           onChangeText={setPlayerName}
+          value={playerName}
         />
         <ButtonIcon icon="add" onPress={handleAddPlayer} />
       </Form>
@@ -99,7 +138,10 @@ export default function Players() {
         data={players}
         keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
-          <PlayerCard name={item.name} onRemove={() => {}} />
+          <PlayerCard
+            name={item.name}
+            onRemove={() => handleRemovePlayer(item)}
+          />
         )}
         ListEmptyComponent={() => (
           <ListEmpty message="Have no members at this group" />
@@ -111,7 +153,11 @@ export default function Players() {
         ]}
       />
 
-      <Button title="Remove Member" variant="secondary" />
+      <Button
+        title="Remove Group"
+        variant="secondary"
+        onPress={handleRemoveGroup}
+      />
     </Container>
   );
 }
